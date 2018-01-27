@@ -16,7 +16,8 @@ namespace wrapVR
         {
             Editor, // In editor
             Oculus, // OVR
-            Google  // Daydream
+            Google, // Daydream
+            Steam    // HTC Vive
         }
 
         // We look at this on start and deal appropriately
@@ -59,7 +60,6 @@ namespace wrapVR
                 // Bail if an instance already exists
                 DestroyObject(this);
             }
-
             // Determine which SDK to use
             if (!UnityEngine.XR.XRSettings.isDeviceActive)
                 m_eSDK = ESDK.Editor;
@@ -67,6 +67,8 @@ namespace wrapVR
                 m_eSDK = ESDK.Oculus;
             else if (UnityEngine.XR.XRSettings.loadedDeviceName == "daydream")
                 m_eSDK = ESDK.Google;
+            else if (UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR")
+                m_eSDK = ESDK.Steam;
             else
             {
                 Debug.LogError("Invalid VR SDK! Destroying...");
@@ -127,6 +129,19 @@ namespace wrapVR
                     RightHand = gvrCameraRig.transform.Find("GvrControllerPointer");
                     LeftHand = null;
                     Eye = gvrCameraRig.GetComponentInChildren<Camera>().transform;
+                    break;
+                case ESDK.Steam:
+                    // Find Vive Camera Rig
+                    Transform steamVrCameraRig = transform.Find("SteamVRCameraRig");
+                    if (steamVrCameraRig == null)
+                    {
+                        Debug.LogError("Unable to find VR Camera Rig for SDK " + m_eSDK);
+                        break;
+                    }
+                    steamVrCameraRig.gameObject.SetActive(true);
+                    RightHand = steamVrCameraRig.transform.Find("Controller (right)");
+                    LeftHand = steamVrCameraRig.transform.Find("Controller (left)");
+                    Eye = steamVrCameraRig.GetComponentInChildren<Camera>().transform;
                     break;
             }
 
